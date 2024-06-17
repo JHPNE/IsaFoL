@@ -91,6 +91,14 @@ lemma welltyped\<^sub>\<sigma>_on_subset:
   unfolding welltyped\<^sub>\<sigma>_on_def
   by blast
 
+lemma
+  assumes
+    "welltyped typeof_fun \<V> (Var var\<^sub>x) \<tau>\<^sub>x"
+    "welltyped typeof_fun \<V> t \<tau>\<^sub>x"
+  shows "welltyped\<^sub>\<sigma>_on (vars_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1) \<union> vars_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2)) typeof_fun \<V>
+     (\<gamma>(var\<^sub>x := t))"
+
+
 definition welltyped\<^sub>\<sigma>' where
   "welltyped\<^sub>\<sigma>' \<F> \<V> \<sigma> \<longleftrightarrow>  (\<forall>t \<tau>. welltyped \<F> \<V> t \<tau> \<longrightarrow> welltyped \<F> \<V> (t \<cdot>t \<sigma>) \<tau>)"
 
@@ -1458,17 +1466,31 @@ proof-
 qed
 
 (* Martin: Look here *)
-lemma welltyped_renaming_exists: 
-  assumes "\<exists>X. \<forall>ty. infinite (X \<inter> {x. \<V>\<^sub>1 x = ty}) \<and> infinite ((UNIV - X) \<inter> {x. \<V>\<^sub>2 x = ty})"
-  obtains \<rho>\<^sub>1 \<rho>\<^sub>2 :: "('f, 'v :: {countable, infinite}) subst" where
+(* lemma welltyped_renaming_exists: 
+  fixes X Y :: "'v set"
+  assumes "infinite (UNIV :: 'v set)" and "finite X" and "finite Y"
+  obtains \<rho>\<^sub>1 \<rho>\<^sub>2 :: "('f, 'v) subst" where
     "term_subst.is_renaming \<rho>\<^sub>1" 
     "term_subst.is_renaming \<rho>\<^sub>2" 
-    "range_vars' \<rho>\<^sub>1 \<inter> range_vars' \<rho>\<^sub>2 = {}"
-    "range_vars' \<rho>\<^sub>1 \<union> range_vars' \<rho>\<^sub>2 = UNIV"
+    "range_vars \<rho>\<^sub>1 \<inter> range_vars \<rho>\<^sub>2 = {}"
     "welltyped\<^sub>\<sigma> \<F> \<V>\<^sub>1 \<rho>\<^sub>1"
     "welltyped\<^sub>\<sigma> \<F> \<V>\<^sub>2 \<rho>\<^sub>2"
   using obtain_inj'
 proof-
+
+  define new_vars :: "'v set" where
+    "new_vars = UNIV - X - Y"
+
+  have "infinite new_vars"
+    unfolding new_vars_def
+    using assms by (metis Diff_infinite_finite)
+
+  obtain f\<^sub>X where "inj f\<^sub>X" and "f\<^sub>X ` X \<subseteq> new_vars"
+    using obtain_inj_endo[OF \<open>finite X\<close> \<open>infinite new_vars\<close>] by metis
+
+  term subst_domain
+  term dom
+
   obtain renaming\<^sub>1 renaming\<^sub>2 :: "'v \<Rightarrow> 'v" where
     renamings:
     "inj renaming\<^sub>1" "inj renaming\<^sub>2"
@@ -1508,7 +1530,7 @@ proof-
   ultimately show ?thesis 
     using that
     by blast
-qed
+qed *)
 
 (*lemma welltyped_renaming_exists': 
   assumes "\<And>ty. infinite { x. \<V> x = ty }" "infinite X" "infinite (UNIV - X)"

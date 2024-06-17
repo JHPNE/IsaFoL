@@ -238,6 +238,15 @@ lemma clause_submset_vars_clause_subset:
   "clause\<^sub>1 \<subseteq># clause\<^sub>2 \<Longrightarrow> vars_clause clause\<^sub>1 \<subseteq> vars_clause clause\<^sub>2"
   by (metis subset_mset.add_diff_inverse sup_ge1 vars_clause_plus)
 
+lemma vars_term_subst_atom: "vars_atom (A \<cdot>a \<sigma>) = (\<Union>x \<in> vars_atom A. vars_term (\<sigma> x))" for A \<sigma>
+  by (cases A) (simp add: vars_atom_def subst_atom_def vars_term_subst_apply_term)
+
+lemma vars_term_subst_literal: "vars_literal (L \<cdot>l \<sigma>) = (\<Union>x \<in> vars_literal L. vars_term (\<sigma> x))" for L \<sigma>
+  by (cases L) (simp_all add: vars_literal_def subst_literal_def vars_term_subst_atom)
+
+lemma vars_term_subst_clause: "vars_clause (C \<cdot> \<sigma>) = (\<Union>x \<in> vars_clause C. vars_term (\<sigma> x))" for C \<sigma>
+  by (simp add: vars_clause_def subst_clause_def vars_term_subst_literal)
+
 lemma atom_subst_eq:
   assumes "\<And>x. x \<in> vars_atom atom \<Longrightarrow> \<sigma> x = \<tau> x"
   shows "atom \<cdot>a \<sigma> = atom \<cdot>a \<tau>"
