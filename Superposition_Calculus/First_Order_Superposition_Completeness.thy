@@ -1373,7 +1373,6 @@ proof(cases premise\<^sub>G\<^sub>2 premise\<^sub>G\<^sub>1 conclusion\<^sub>G r
       "\<gamma> = \<mu> \<odot> \<sigma>"
       "welltyped_imgu' typeof_fun \<V> (term\<^sub>1 \<cdot>t \<rho>\<^sub>1) (term\<^sub>2 \<cdot>t \<rho>\<^sub>2) \<mu>"
     using welltyped_imgu'_exists
-    try0
     by (smt (verit, del_insts))
   
   define conclusion' where 
@@ -1390,8 +1389,8 @@ proof(cases premise\<^sub>G\<^sub>2 premise\<^sub>G\<^sub>1 conclusion\<^sub>G r
       show "term_subst.is_renaming \<rho>\<^sub>2"
         using renaming(2).
     next
-      show "range_vars' \<rho>\<^sub>1 \<inter> range_vars' \<rho>\<^sub>2 = {}"
-        using renaming(3) sorry
+      show "vars_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1) \<inter> vars_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2) = {}"
+        using renaming(3) .
     next 
       show "premise\<^sub>1 = add_mset literal\<^sub>1 premise\<^sub>1'"
         using premise\<^sub>1.
