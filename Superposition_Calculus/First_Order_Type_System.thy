@@ -1908,4 +1908,92 @@ proof-
     by (metis assms(2) assms(3) the_mgu the_mgu_term_subst_is_imgu unified)
 qed
 
+lemma
+  fixes \<V>\<^sub>1 \<V>\<^sub>2
+  assumes
+    inj\<^sub>1: "inj_on f\<^sub>1 \<X>\<^sub>1" and inj\<^sub>2: "inj_on f\<^sub>2 \<X>\<^sub>2" and
+    "f\<^sub>1 ` \<X>\<^sub>1 \<inter> f\<^sub>2 ` \<X>\<^sub>2 = {}"
+  defines
+    "\<rho>\<^sub>1 \<equiv> Var o f\<^sub>1" and
+    "\<rho>\<^sub>2 \<equiv> Var o f\<^sub>2" and
+    "\<And>x'. \<V> x' \<equiv>
+      if \<exists>x \<in> \<X>\<^sub>1. x' = f\<^sub>1 x then \<V>\<^sub>1 (the_inv_into \<X>\<^sub>1 f\<^sub>1 x') else \<V>\<^sub>2 (the_inv_into \<X>\<^sub>2 f\<^sub>2 x')"
+  shows
+    "\<And>t \<tau>. vars_term t \<subseteq> \<X>\<^sub>1 \<Longrightarrow> welltyped \<F> \<V>\<^sub>1 t \<tau> \<Longrightarrow> welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>1) \<tau>" and
+    "\<And>t \<tau>. vars_term t \<subseteq> \<X>\<^sub>2 \<Longrightarrow> welltyped \<F> \<V>\<^sub>2 t \<tau> \<Longrightarrow> welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>2) \<tau>"
+proof -
+  fix t \<tau>
+  assume "welltyped \<F> \<V>\<^sub>1 t \<tau>" "vars_term t \<subseteq> \<X>\<^sub>1"
+  thus "welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>1) \<tau>"
+  proof (induction t \<tau> rule: welltyped.induct)
+    case (Var x \<tau>)
+    show ?case
+      unfolding \<rho>\<^sub>1_def comp_def eval_term.simps
+    proof (rule welltyped.Var)
+      show "\<V> (f\<^sub>1 x) = \<tau>"
+        using Var.prems Var.hyps
+        unfolding \<V>_def
+        using the_inv_into_f_f[OF inj\<^sub>1]
+        by fastforce
+    qed
+  next
+    case (Fun f \<tau>s \<tau> ts)
+    show ?case
+      unfolding eval_term.simps
+    proof (rule welltyped.Fun)
+      show "\<F> f = (\<tau>s, \<tau>)"
+        using Fun.hyps .
+    next
+      show "list_all2 (welltyped \<F> \<V>) (map (\<lambda>s. s \<cdot>t \<rho>\<^sub>1) ts) \<tau>s"
+        unfolding list.rel_map
+        using Fun.IH
+      proof (rule list.rel_mono_strong)
+        fix t and yb
+        assume
+          "t \<in> set ts" and
+          "yb \<in> set \<tau>s" and
+          "welltyped \<F> \<V>\<^sub>1 t yb \<and> (vars_term t \<subseteq> \<X>\<^sub>1 \<longrightarrow> welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>1) yb)"
+        thus "welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>1) yb"
+          using Fun.prems by auto
+      qed
+    qed
+  qed
+next
+  fix t \<tau>
+  assume "welltyped \<F> \<V>\<^sub>2 t \<tau>" "vars_term t \<subseteq> \<X>\<^sub>2"
+  thus "welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>2) \<tau>"
+  proof (induction t \<tau> rule: welltyped.induct)
+    case (Var x \<tau>)
+    show ?case
+      unfolding \<rho>\<^sub>2_def comp_def eval_term.simps
+    proof (rule welltyped.Var)
+      show "\<V> (f\<^sub>2 x) = \<tau>"
+        unfolding \<V>_def
+        by (metis Var.hyps Var.prems assms(3) disjoint_iff image_iff in_mono inj\<^sub>2 term.set_intros(3)
+            the_inv_into_f_f)
+    qed
+  next
+    case (Fun f \<tau>s \<tau> ts)
+    show ?case
+      unfolding eval_term.simps
+    proof (rule welltyped.Fun)
+      show "\<F> f = (\<tau>s, \<tau>)"
+        using Fun.hyps .
+    next
+      show "list_all2 (welltyped \<F> \<V>) (map (\<lambda>s. s \<cdot>t \<rho>\<^sub>2) ts) \<tau>s"
+        unfolding list.rel_map
+        using Fun.IH
+      proof (rule list.rel_mono_strong)
+        fix t and yb
+        assume
+          "t \<in> set ts" and
+          "yb \<in> set \<tau>s" and
+          "welltyped \<F> \<V>\<^sub>2 t yb \<and> (vars_term t \<subseteq> \<X>\<^sub>2 \<longrightarrow> welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>2) yb)"
+        thus "welltyped \<F> \<V> (t \<cdot>t \<rho>\<^sub>2) yb"
+          using Fun.prems by auto
+      qed
+    qed
+  qed
+qed
+
 end

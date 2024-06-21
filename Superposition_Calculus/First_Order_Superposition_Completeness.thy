@@ -561,6 +561,7 @@ proof(cases premise\<^sub>G conclusion\<^sub>G rule: ground.ground_eq_factoring.
     by blast
 qed
 
+
 (* TODO: Try to split up proof *)
 lemma superposition_lifting:
   fixes 
