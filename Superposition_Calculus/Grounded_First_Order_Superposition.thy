@@ -57,6 +57,39 @@ abbreviation is_inference_grounding where
      )
   \<and> \<iota>\<^sub>G \<in> ground.G_Inf"
 
+abbreviation new_is_inference_grounding where
+  "new_is_inference_grounding \<iota> \<iota>\<^sub>G \<gamma> \<rho>\<^sub>1 \<rho>\<^sub>2 \<equiv>
+    (case \<iota> of
+        Infer [(premise, \<V>')] (conclusion, \<V>) \<Rightarrow>
+          is_ground_clause (premise \<cdot> \<gamma>)
+        \<and> is_ground_clause (conclusion \<cdot> \<gamma>)
+        \<and> \<iota>\<^sub>G = Infer [to_ground_clause (premise \<cdot> \<gamma>)] (to_ground_clause (conclusion \<cdot> \<gamma>))
+        \<and> welltyped\<^sub>c typeof_fun \<V> premise
+        \<and> welltyped\<^sub>c typeof_fun \<V> conclusion 
+        \<and> welltyped\<^sub>\<sigma>_on (vars_clause premise \<union> vars_clause conclusion) typeof_fun \<V> \<gamma>
+        \<and> \<V> = \<V>'
+      | Infer [(premise\<^sub>2, \<V>\<^sub>2), (premise\<^sub>1, \<V>\<^sub>1)] (conclusion, \<V>) \<Rightarrow> 
+          \<V>\<^sub>1 = \<V>\<^sub>2 \<and> \<V>\<^sub>2 = \<V>
+        \<and> term_subst.is_renaming \<rho>\<^sub>1
+        \<and> term_subst.is_renaming \<rho>\<^sub>2
+        \<and> vars_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1) \<inter> vars_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2) = {}
+        \<and> is_ground_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1 \<cdot> \<gamma>)
+        \<and> is_ground_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2 \<cdot> \<gamma>)
+        \<and> is_ground_clause (conclusion \<cdot> \<gamma>)
+        \<and> \<iota>\<^sub>G =
+            Infer
+              [to_ground_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2 \<cdot> \<gamma>), to_ground_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1 \<cdot> \<gamma>)]
+              (to_ground_clause (conclusion \<cdot> \<gamma>))
+        \<and> welltyped\<^sub>c typeof_fun \<V> (premise\<^sub>1 \<cdot> \<rho>\<^sub>1)
+        \<and> welltyped\<^sub>c typeof_fun \<V> (premise\<^sub>2 \<cdot> \<rho>\<^sub>2)
+        \<and> welltyped\<^sub>c typeof_fun \<V> conclusion
+        \<and> welltyped\<^sub>\<sigma>_on
+            (vars_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1) \<union> vars_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2) \<union> vars_clause conclusion)
+            typeof_fun \<V> \<gamma>
+      | _ \<Rightarrow> False
+     )
+  \<and> \<iota>\<^sub>G \<in> ground.G_Inf"
+
 definition inference_groundings where 
   "inference_groundings \<iota> = { \<iota>\<^sub>G | \<iota>\<^sub>G \<gamma> \<rho>\<^sub>1 \<rho>\<^sub>2. is_inference_grounding \<iota> \<iota>\<^sub>G \<gamma> \<rho>\<^sub>1 \<rho>\<^sub>2 }"
 

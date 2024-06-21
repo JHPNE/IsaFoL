@@ -122,4 +122,11 @@ lemma imgu_exists:
   using imgu_exists_extendable[OF assms, of "(\<lambda>_ _ _. True)"]
   by auto
 
+lemma range_vars_subset_if_is_imgu:
+  assumes "term_subst.is_imgu \<mu> {{t, t'}}"
+  shows "range_vars \<mu> \<subseteq> vars_term t \<union> vars_term t'"
+  using assms
+  \<comment> \<open>See HOL-ex.IMGU_range_vars_subset for proof sketch\<close>
+  sorry
+
 end

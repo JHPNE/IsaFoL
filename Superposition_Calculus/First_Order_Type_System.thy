@@ -91,12 +91,15 @@ lemma welltyped\<^sub>\<sigma>_on_subset:
   unfolding welltyped\<^sub>\<sigma>_on_def
   by blast
 
-lemma
+lemma welltyped\<^sub>\<sigma>_on_insert:
+  fixes \<X> \<F> \<V> \<gamma> \<tau>
   assumes
-    "welltyped typeof_fun \<V> (Var var\<^sub>x) \<tau>\<^sub>x"
-    "welltyped typeof_fun \<V> t \<tau>\<^sub>x"
-  shows "welltyped\<^sub>\<sigma>_on (vars_clause (premise\<^sub>1 \<cdot> \<rho>\<^sub>1) \<union> vars_clause (premise\<^sub>2 \<cdot> \<rho>\<^sub>2)) typeof_fun \<V>
-     (\<gamma>(var\<^sub>x := t))"
+    "welltyped\<^sub>\<sigma>_on \<X> \<F> \<V> \<gamma>"
+    "welltyped \<F> \<V> (Var x) \<tau>"
+    "welltyped \<F> \<V> t \<tau>"
+  shows "welltyped\<^sub>\<sigma>_on (insert x \<X>) \<F> \<V> (\<gamma>(x := t))"
+  using assms
+  by (simp add: welltyped.simps welltyped\<^sub>\<sigma>_on_def)
 
 
 definition welltyped\<^sub>\<sigma>' where
