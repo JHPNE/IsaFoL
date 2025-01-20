@@ -30,6 +30,47 @@ for
   select :: "'f gterm clause \<Rightarrow> 'f gterm clause"
 begin
 
+lemma add_mset_eq_self: "{#a, a#} = {#b, b#} \<Longrightarrow> a = b"
+  by (metis add_mset_eq_add_mset)
+
+lemma inj_mset_lit: "inj mset_lit"
+proof(unfold inj_def, intro allI impI)
+  fix l l' :: "'a literal"
+  assume mset_lit: "mset_lit l = mset_lit l'"
+
+  show "l = l'"
+  proof(cases l)
+    case l: (Pos a)
+    then show ?thesis
+    proof(cases l')
+      case l': (Pos a')
+
+      then show ?thesis
+        using mset_lit l l'
+        by simp
+    next
+      case l': (Neg a')
+      then show ?thesis
+        using mset_lit l l'
+        by simp
+    qed
+  next
+    case l: (Neg a)
+    then show ?thesis
+    proof(cases l')
+      case l': (Pos a')
+      then show ?thesis
+        using mset_lit l l'
+        by simp
+    next
+      case l': (Neg a')
+      then show ?thesis
+        using mset_lit l l' add_mset_eq_self
+        by simp
+    qed
+  qed
+qed
+
 subsection \<open>Resolution Calculus\<close>
 
 inductive resolution ::
