@@ -4,6 +4,52 @@ theory Clausal_Calculus_Extra
     Uprod_Extra
 begin
 
+(*Helper for Ground Order Resolution TODO: Merging?*)
+primrec mset_lit2 :: "'a literal \<Rightarrow> 'a multiset" where
+  "mset_lit2 (Pos A) = {#A#}" |
+  "mset_lit2 (Neg A) = {#A, A#}"
+
+lemma add_mset_eq_self: "{#a, a#} = {#b, b#} \<Longrightarrow> a = b"
+  by (metis add_mset_eq_add_mset)
+
+lemma inj_mset_lit2: "inj mset_lit2"
+proof(unfold inj_def, intro allI impI)
+  fix l l' :: "'a literal"
+  assume mset_lit2: "mset_lit2 l = mset_lit2 l'"
+
+  show "l = l'"
+  proof(cases l)
+    case l: (Pos a)
+    show ?thesis
+    proof(cases l')
+      case l': (Pos a')
+
+      show ?thesis
+        using mset_lit2 l l'
+        by simp
+    next
+      case l': (Neg a')
+      show ?thesis
+        using mset_lit2 l l'
+        by simp
+    qed
+  next
+    case l: (Neg a)
+    then show ?thesis
+    proof(cases l')
+      case l': (Pos a')
+      show ?thesis
+        using mset_lit2 l l'
+        by simp
+    next
+      case l': (Neg a')
+      show ?thesis
+        using mset_lit2 l l' add_mset_eq_self
+        by simp
+    qed
+  qed
+qed
+
 lemma map_literal_inverse: 
   "(\<And>x. f (g x) = x) \<Longrightarrow> (\<And>literal. map_literal f (map_literal g literal) = literal)"
   by (simp add: literal.map_comp literal.map_ident_strong)
@@ -134,5 +180,13 @@ global_interpretation uprod_literal_functor: natural_functor_conversion where
   map = map_uprod_literal and to_set = uprod_literal_to_set and map_to = map_uprod_literal and 
   map_from = map_uprod_literal and map' = map_uprod_literal and to_set' = uprod_literal_to_set
   by unfold_locales (auto simp: mset_lit_image_mset)
- 
+
+
+(* Helper for Ground Order Resolution *)
+abbreviation resolution_literal_to_set where 
+  "resolution_literal_to_set l \<equiv> set_mset (mset_lit2 l)"
+
+abbreviation map_resolution_literal where 
+  "map_resolution_literal f \<equiv> map_literal f"
+
 end

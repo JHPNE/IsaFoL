@@ -225,6 +225,10 @@ definition G_entails :: "'f gatom clause set \<Rightarrow> 'f gatom clause set \
   "G_entails N\<^sub>1 N\<^sub>2 \<longleftrightarrow> (\<forall>(I :: 'f gterm rel). refl I \<longrightarrow> trans I \<longrightarrow> sym I \<longrightarrow>
     compatible_with_gctxt I \<longrightarrow> upair ` I \<TTurnstile>s N\<^sub>1 \<longrightarrow> upair ` I \<TTurnstile>s N\<^sub>2)"
 
+
+lemma test_ordering: "C \<prec>\<^sub>c D \<Longrightarrow> C \<prec>\<^sub>c D"
+  by simp
+
 lemma superposition_smaller_conclusion:
   assumes
     step: "superposition P1 P2 C"

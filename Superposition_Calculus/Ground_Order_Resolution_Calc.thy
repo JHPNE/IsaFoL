@@ -15,61 +15,16 @@ begin
 
 subsection \<open>Helper\<close>
 
-primrec mset_lit :: "'a literal \<Rightarrow> 'a multiset" where
-  "mset_lit (Pos A) = {#A#}" |
-  "mset_lit (Neg A) = {#A, A#}"
 
 section \<open>Resolution Calculus\<close>
 
 locale ground_order_resolution_calculus =
-  ground_order where less\<^sub>t = less\<^sub>t and
-  literal_to_mset = mset_lit +
-  selection_function select
+  ground_order_base where less\<^sub>t = less\<^sub>t +
+  selection_function select 
 for
   less\<^sub>t :: "'f gterm \<Rightarrow> 'f gterm \<Rightarrow> bool" and
   select :: "'f gterm clause \<Rightarrow> 'f gterm clause"
 begin
-
-lemma add_mset_eq_self: "{#a, a#} = {#b, b#} \<Longrightarrow> a = b"
-  by (metis add_mset_eq_add_mset)
-
-lemma inj_mset_lit: "inj mset_lit"
-proof(unfold inj_def, intro allI impI)
-  fix l l' :: "'a literal"
-  assume mset_lit: "mset_lit l = mset_lit l'"
-
-  show "l = l'"
-  proof(cases l)
-    case l: (Pos a)
-    then show ?thesis
-    proof(cases l')
-      case l': (Pos a')
-
-      then show ?thesis
-        using mset_lit l l'
-        by simp
-    next
-      case l': (Neg a')
-      then show ?thesis
-        using mset_lit l l'
-        by simp
-    qed
-  next
-    case l: (Neg a)
-    then show ?thesis
-    proof(cases l')
-      case l': (Pos a')
-      then show ?thesis
-        using mset_lit l l'
-        by simp
-    next
-      case l': (Neg a')
-      then show ?thesis
-        using mset_lit l l' add_mset_eq_self
-        by simp
-    qed
-  qed
-qed
 
 subsection \<open>Resolution Calculus\<close>
 
@@ -122,7 +77,15 @@ end
 
 subsection \<open>Smaller Conclussions\<close>
 
+context ground_order_resolution_calculus
+begin
 
+lemma test_ordering: "C \<prec>\<^sub>c D \<Longrightarrow> C \<prec>\<^sub>c D"
+  by simp
+
+end
+
+subsection \<open>Sublocales\<close>
 
 sublocale ground_order_resolution_calculus \<subseteq> consequence_relation where
   Bot = G_Bot and

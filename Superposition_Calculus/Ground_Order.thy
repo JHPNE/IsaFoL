@@ -17,4 +17,13 @@ sublocale ground_order
 
 end
 
+locale ground_order_base =
+  term.order: ground_term_order
+begin
+
+sublocale ground_order
+  where literal_to_mset = mset_lit2
+  by unfold_locales (rule inj_mset_lit2)
+end
+
 end
