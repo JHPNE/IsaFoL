@@ -10,7 +10,7 @@ primrec mset_lit2 :: "'a literal \<Rightarrow> 'a multiset" where
   "mset_lit2 (Neg A) = {#A, A#}"
 
 lemma add_mset_eq_self: "{#a, a#} = {#b, b#} \<Longrightarrow> a = b"
-  by (metis add_mset_eq_add_mset)
+  by (metis add_mset_eq_single add_mset_remove_trivial diff_union_swap)
 
 lemma inj_mset_lit2: "inj mset_lit2"
 proof(unfold inj_def, intro allI impI)

@@ -34,10 +34,10 @@ where
   resolutionI: "
     C = add_mset L\<^sub>C C' \<Longrightarrow>
     D = add_mset L\<^sub>D D' \<Longrightarrow>
-    L\<^sub>D = (Pos t) \<Longrightarrow>
     L\<^sub>C = (Neg t) \<Longrightarrow>
-    L\<^sub>C \<prec>\<^sub>l L\<^sub>D \<Longrightarrow>
-    (select C = {#} \<and> is_maximal L\<^sub>C C) \<or> (is_maximal L\<^sub>C (select C)) \<Longrightarrow>
+    L\<^sub>D = (Pos t) \<Longrightarrow>
+    D \<prec>\<^sub>c C \<Longrightarrow>
+    select C = {#} \<and> is_maximal L\<^sub>C C \<or> ( L\<^sub>C \<in># (select C)) \<Longrightarrow>
     select D = {#} \<Longrightarrow>    
     is_strictly_maximal L\<^sub>D D \<Longrightarrow>
     R = (C' + D') \<Longrightarrow>
@@ -73,21 +73,62 @@ abbreviation G_Bot :: "'f gterm clause set" where
 
 definition G_entails :: "'f gterm clause set \<Rightarrow> 'f gterm clause set \<Rightarrow> bool" where
   "G_entails N\<^sub>1 N\<^sub>2 \<longleftrightarrow> (\<forall> I. I \<TTurnstile>s N\<^sub>1 \<longrightarrow> I \<TTurnstile>s N\<^sub>2)"
-end
+
 
 subsection \<open>Smaller Conclussions\<close>
 
-context ground_order_resolution_calculus
-begin
+(*
+P1 + P2 = C + D = (C' + L\<^sub>C) + (L\<^sub>D + D')
+zu zeigen dass
+C' + D' \<prec>\<^sub>c (C' + L\<^sub>C) + (L\<^sub>D + D')
+und R = C' + D'
 
-lemma test_ordering: "C \<prec>\<^sub>c D \<Longrightarrow> C \<prec>\<^sub>c D"
-  by simp
+*)
+lemma gor_smaller_conclusion:
+  assumes
+    step: "resolution C D R"
+  shows "R \<prec>\<^sub>c (C + D)"
+  using step
+proof ( cases C D R rule: resolution.cases)
+  case (resolutionI L\<^sub>C C' L\<^sub>D  D')
+  have "(C' + D') \<prec>\<^sub>c ((add_mset L\<^sub>C C')  + (add_mset L\<^sub>D D'))"
+    unfolding less\<^sub>c_def
+    by (metis add.right_neutral add_mset_not_empty empty_iff one_step_implies_multp
+        set_mset_empty union_mset_add_mset_left union_mset_add_mset_right)
+  thus ?thesis
+    unfolding resolutionI
+    by meson
+qed
 
-end
+lemma ground_resolution_smaller_conclusion:
+  assumes
+    step: "resolution C D R"
+  shows "R \<prec>\<^sub>c C"
+  using step
+proof (cases C D R rule: resolution.cases)
+  case (resolutionI L\<^sub>C C' L\<^sub>D D' t)
+  have "\<forall>k\<in>#D'. k \<prec>\<^sub>l Pos t"
+    using \<open>is_strictly_maximal L\<^sub>D D\<close> \<open>D = add_mset L\<^sub>D D'\<close>
+    using is_strictly_maximal_def local.resolutionI(4) by fastforce
+  moreover have "\<And>A. Pos A \<prec>\<^sub>l Neg A"
+    unfolding literal.order.multiset_extension_def
+    by auto
+  ultimately have "\<forall>k\<in>#D'. k \<prec>\<^sub>l Neg t"
+    using literal.order.dual_order.strict_trans by blast
+  hence "D' \<prec>\<^sub>c {#Neg t#}"
+    using one_step_implies_multp[of "{#Neg t#}" D' "(\<prec>\<^sub>l)" "{#}"]
+    by (simp add: less\<^sub>c_def)
+  hence "D' + C' \<prec>\<^sub>c add_mset (Neg t) C'"
+    using multp_cancel[of "(\<prec>\<^sub>l)" C' D' "{#Neg t#}"]
+    using less\<^sub>c_def by force
+  thus ?thesis
+    unfolding resolutionI
+    by (simp only: add.commute)
+qed
 
 subsection \<open>Sublocales\<close>
 
-sublocale ground_order_resolution_calculus \<subseteq> consequence_relation where
+sublocale consequence_relation where
   Bot = G_Bot and
   entails = G_entails
 proof unfold_locales
@@ -110,7 +151,8 @@ next
     by simp
 qed
 
-sublocale ground_order_resolution_calculus \<subseteq> calculus_with_finitary_standard_redundancy where
+
+sublocale calculus_with_finitary_standard_redundancy where
   Inf = G_Inf and
   Bot = G_Bot and
   entails = G_entails and
